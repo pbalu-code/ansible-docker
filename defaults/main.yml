@@ -1,0 +1,13 @@
+---
+# defaults file for docker
+#https://github.com/docker/compose/releases/latest
+DOCKER_REQ_PACKAGES:
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - python3-docker
+
+DOCKER_KEYRING: /usr/share/keyrings/docker-archive-keyring.gpg
+
+DOCKER_COMPOSER_VERSION: v2.5.1

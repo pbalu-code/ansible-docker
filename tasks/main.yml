@@ -1,0 +1,47 @@
+---
+# tasks file for docker
+- name: Include distribution dependent variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
+
+- name: Check APT repository updates
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install required packages
+  apt:
+    name: "{{ DOCKER_REQ_PACKAGES }}"
+
+- name: Add an Apt signing key
+  ansible.builtin.apt_key:
+    url: "{{ DOCKER_KEYRING_SOURCE }}"
+    keyring: "{{ DOCKER_KEYRING }}"
+
+- name: Set apt repo
+  lineinfile:
+    path: /etc/apt/sources.list.d/docker.list
+    line: "deb [arch=amd64 signed-by={{ DOCKER_KEYRING }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+    create: true
+  register: docker_repo
+
+- name: Check APT updates
+  apt:
+    update_cache: yes
+  when: docker_repo.changed
+
+- name: Install docker-ce
+  apt:
+    name: docker-ce
+
+- name: Install docker-composer
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{ DOCKER_COMPOSER_VERSION }}/docker-compose-linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    owner: root
+    group: root
+    mode: 775

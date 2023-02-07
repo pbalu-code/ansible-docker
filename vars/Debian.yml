@@ -1,0 +1,3 @@
+---
+DOCKER_KEYRING_SOURCE: https://download.docker.com/linux/debian/gpg
+#DOCKER_KEYRING: /etc/apt/keyrings/docker.gpg
