@@ -1,10 +1,47 @@
 ---
-# This is an example playbook to execute Ansible tests.
-
+# Purpose: assert that the instance really ended up in the expected state.
+# Molecule calls this playbook with `molecule verify`.
 - name: Verify
   hosts: all
-  gather_facts: false
+  gather_facts: true
+  become: true
   tasks:
-  - name: Example assertion
-    assert:
-      that: true
+    - name: Check if docker daemon is running
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+      register: docker_service
+
+    - name: Assert docker service is running
+      ansible.builtin.assert:
+        that:
+          - docker_service.status.ActiveState == "active"
+        fail_msg: "Docker service is not running"
+        success_msg: "Docker service is running successfully"
+
+    - name: Get docker version
+      ansible.builtin.shell: docker --version
+      register: docker_version
+      changed_when: false
+      when: docker_service.status.ActiveState == "active"
+
+    - name: Assert docker is installed
+      ansible.builtin.assert:
+        that:
+          - docker_version.stdout is search("Docker version")
+        fail_msg: "Docker is not installed or not working"
+        success_msg: "Docker is properly installed. {{ docker_version.stdout }}"
+      when: docker_service.status.ActiveState == "active"
+
+    - name: Test docker connectivity
+      ansible.builtin.shell: docker ps
+      register: docker_ps
+      changed_when: false
+      when: docker_service.status.ActiveState == "active"
+
+    - name: Assert docker is accessible
+      ansible.builtin.assert:
+        that:
+          - docker_ps.rc == 0
+        fail_msg: "Cannot access docker daemon"
+        success_msg: "Docker daemon is accessible and working"

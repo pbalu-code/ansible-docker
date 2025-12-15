@@ -1,11 +1,97 @@
 ---
+driver:
+  name: vagrant
+  provider:
+    name: libvirt
+    type: libvirt
+    options:
+      network_name: private_network
+      memory: 4096
+      cpus: 2
+
 dependency:
   name: galaxy
-driver:
-  name: delegated
+  options:
+    ignore-certs: false
+    ignore-errors: false
+    role-file: requirements.yml
+    requirements-file: requirements.yml
+
 platforms:
-  - name: instance
+  - name: Ubuntu24
+    box: "bento/ubuntu-24.04"
+#    box_version: "202510.26.0"
+    memory: 4096
+    cpus: 2
+    interfaces:
+      - auto_config: true
+        network_name: private_network
+        type: static
+        ip: 192.168.56.10
+  - name: Debian12
+    box: "generic/debian12"
+    memory: 4096
+    cpus: 2
+    interfaces:
+      - auto_config: true
+        network_name: private_network
+        type: static
+        ip: 192.168.56.12
+
 provisioner:
   name: ansible
+  config_options:
+    defaults:
+      stdout_callback: debug
+    env:
+      ANSIBLE_FORCE_COLOR: "true"
+  playbooks:
+    create: create.yml
+    converge: converge.yml
+    destroy: destroy.yml
+    cleanup: cleanup.yml
+    prepare: prepare.yml
+    verify: verify.yml
+
+# Verifier runs the `verify` playbook (verify.yml) using Ansible
 verifier:
   name: ansible
+  enabled: True
+
+role_name_check: 1
+# # Dependency management (download roles/collections)
+# dependency:
+#   name: galaxy
+#   options:
+#     ignore-certs: false
+#     ignore-errors: false
+#     role-file: requirements.yml
+#     requirements-file: requirements.yml
+
+  # executor:
+  #   backend: ansible-playbook
+  #   args:
+  #     ansible_playbook:
+  #       - --diff
+  #       - --force-handlers
+  #       - --inventory=/path/to/inventory.yml
+  #     ansible_navigator:
+  #       - --mode stdout
+  #       - --pull-policy missing
+  #       - --execution-environment-image ghcr.io/ansible/community-ansible-dev-tools:latest
+
+scenario:
+  name: default
+  test_sequence:
+#    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - side_effect
+    - verify
+    - cleanup
+    - destroy

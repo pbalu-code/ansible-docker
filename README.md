@@ -1,4 +1,4 @@
-Docker + docker-compose Ansible Role
+Docker Ansible Role
 =========
 
 This role is to install docker and docker compose.
@@ -8,13 +8,43 @@ This role is to install docker and docker compose.
 
 Requirements
 ------------
+  
+ansible 2.10+  - Recommended >= 9.0   
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+
+
+molecule / vagrant
+------------ 
+Vagrant:  
+https://computingforgeeks.com/install-latest-vagrant-on-ubuntu/  
+
+Molecule:  
+https://philnewm.github.io/molecule-start/  
+
+
+apt:  
+- python3-dev  
+- libvirt-daemon-system  
+- libvirt-clients  
+- libvirt-dev  
+- pkg-config  
+  
+pip:  
+- python-vagrant  
+- testinfra  
+- libvirt-python  
+- molecule  
+- molecule-plugins  
+- rich  
+
+vagrant:  
+- vagrant plugin install vagrant-libvirt
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+See defaults!  
+
 
 Dependencies
 ------------
@@ -24,18 +54,27 @@ A list of other roles hosted on Galaxy should go here, plus any details in regar
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- name: Deploy docker
+  hosts: all
+  gather_facts: true # Disable if your role does not rely on facts
+  become: true
+  roles:
+    - name: balazspetik.ansible-docker
+  # or by tasks
+  tasks:    
+    - name: Deploy docker
+      ansible.builtin.include_role:
+        name: balazspetik.ansible-docker
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
+```
 License
 -------
 
-BSD
+MIT
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Balázs Petik
+DecOps Engineer

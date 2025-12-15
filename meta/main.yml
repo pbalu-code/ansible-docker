@@ -1,6 +1,8 @@
 galaxy_info:
   author: balazspetik
-  description: Docker and docker compose isntaller role
+  namespace: balazspetik
+  role_name: ansible_docker
+  description: Docker installer role
 #  company: ""
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value

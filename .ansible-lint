@@ -1,0 +1,34 @@
+---
+# Ansible-lint configuration for ansible-docker role
+# This file controls the behavior of ansible-lint during syntax checks
+
+# Skip specific rules
+skip_list:
+  - role-name          # Skip role naming convention check
+  - line-too-long      # Skip line length checks if needed
+
+# Only run specific rules (optional - comment out to run all)
+# only_builtins: true
+
+# Configure verbosity
+verbosity: 1
+
+# Exclude paths from linting
+exclude_paths:
+  - molecule/
+  - tests/
+  - .git/
+
+# Custom rules directories (if you have custom rules)
+# rules:
+#   - path/to/custom/rules
+
+# Configure rule-specific options
+rules:
+  # Disable specific rule variants
+  # command-instead-of-module:
+  #   skip_list:
+  #     - apt
+
+# Configure formatting for output
+# format: sarif

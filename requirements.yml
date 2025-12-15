@@ -1,0 +1,5 @@
+---
+collections:
+  - name: community.vagrant
+#  - name: containers.podman
+  - name: ansible.posix # docker
