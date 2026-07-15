@@ -5,7 +5,9 @@
   ansible.builtin.stat:
     path: "{{ DOCKER_auditd_conf_path }}/rules.d/audit.rules"
   register: audit_rules
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Test auditd immutable mode
   ansible.builtin.lineinfile:
@@ -17,7 +19,9 @@
   changed_when: false
   register: immutable_audit
   when: audit_rules.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Update audit.rules for docker
   ansible.builtin.blockinfile:
@@ -51,7 +55,9 @@
     insertbefore: '-e 2'
   when: audit_rules.stat.exists
   notify: Restart auditd
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # -------------------------------------------------------
 # Docker daemon hardening - daemon.json configuration
@@ -64,7 +70,9 @@
     owner: root
     group: root
     mode: '0755'
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure /etc/docker/certs directory exists
   ansible.builtin.file:
@@ -73,7 +81,9 @@
     owner: root
     group: root
     mode: '0700'
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Write Docker daemon.json from template
   ansible.builtin.template:
@@ -84,12 +94,16 @@
     mode: '0644'
     validate: 'python3 -c "import json; json.load(open(\"%s\"))"'
   notify: Restart docker
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # CIS 2.1 - Run Docker daemon as non-root (rootless mode)
 - name: Configure rootless Docker
   when: DOCKER_rootless_enabled | bool
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
   block:
     - name: Ensure rootless Docker user exists
       ansible.builtin.user:
@@ -130,7 +144,9 @@
     state: present
     reload: true
   ignore_errors: true
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Verify Docker daemon.json is valid
   ansible.builtin.command:
@@ -138,7 +154,9 @@
   register: docker_info
   changed_when: false
   failed_when: docker_info.rc != 0
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # -------------------------------------------------------
 # Req 7 - Container Daemon configuration file hardening
@@ -150,12 +168,16 @@
     cmd: systemctl show -p FragmentPath docker.service
   register: docker_service_path
   changed_when: false
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Set docker.service path fact
   ansible.builtin.set_fact:
     docker_service_file: "{{ docker_service_path.stdout | regex_replace('FragmentPath=', '') }}"
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure docker.service file ownership is root:root
   ansible.builtin.file:
@@ -163,14 +185,18 @@
     owner: root
     group: root
   when: docker_service_file != ''
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure docker.service file permissions are 644
   ansible.builtin.file:
     path: "{{ docker_service_file }}"
     mode: '0644'
   when: docker_service_file != ''
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- docker.socket file ---
 - name: Find docker.socket file path
@@ -178,12 +204,16 @@
     cmd: systemctl show -p FragmentPath docker.socket
   register: docker_socket_path
   changed_when: false
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Set docker.socket path fact
   ansible.builtin.set_fact:
     docker_socket_file: "{{ docker_socket_path.stdout | regex_replace('FragmentPath=', '') }}"
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure docker.socket file ownership is root:root
   ansible.builtin.file:
@@ -191,14 +221,18 @@
     owner: root
     group: root
   when: docker_socket_file != ''
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure docker.socket file permissions are 644
   ansible.builtin.file:
     path: "{{ docker_socket_file }}"
     mode: '0644'
   when: docker_socket_file != ''
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- /etc/docker directory ---
 - name: Ensure /etc/docker directory ownership is root:root
@@ -208,7 +242,9 @@
     owner: root
     group: root
     mode: '0755'
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- Registry certificate files ---
 - name: Find registry certificate files
@@ -217,7 +253,9 @@
     patterns: "*.crt,*.cert"
     recurse: true
   register: registry_certs
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure registry certificate file ownership is root:root
   ansible.builtin.file:
@@ -225,14 +263,18 @@
     owner: root
     group: root
   loop: "{{ registry_certs.files }}"
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure registry certificate file permissions are 444
   ansible.builtin.file:
     path: "{{ item.path }}"
     mode: '0444'
   loop: "{{ registry_certs.files }}"
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- TLS CA certificate ---
 - name: Check if TLS CA certificate file exists
@@ -242,7 +284,9 @@
   when:
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_cacert is defined
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure TLS CA certificate file ownership is root:root
   ansible.builtin.file:
@@ -253,7 +297,9 @@
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_cacert is defined
     - tls_cacert_file.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure TLS CA certificate file permissions are 444
   ansible.builtin.file:
@@ -263,7 +309,9 @@
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_cacert is defined
     - tls_cacert_file.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- Docker server certificate ---
 - name: Check if Docker server certificate file exists
@@ -273,7 +321,9 @@
   when:
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_cert is defined
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure Docker server certificate file ownership is root:root
   ansible.builtin.file:
@@ -284,7 +334,9 @@
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_cert is defined
     - tls_cert_file.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure Docker server certificate file permissions are 444
   ansible.builtin.file:
@@ -294,7 +346,9 @@
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_cert is defined
     - tls_cert_file.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- Docker server certificate key ---
 - name: Check if Docker server certificate key file exists
@@ -304,7 +358,9 @@
   when:
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_key is defined
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure Docker server certificate key file ownership is root:root
   ansible.builtin.file:
@@ -315,7 +371,9 @@
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_key is defined
     - tls_key_file.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure Docker server certificate key file permissions are 400
   ansible.builtin.file:
@@ -325,7 +383,9 @@
     - DOCKER_tls_enabled | bool
     - DOCKER_tls_key is defined
     - tls_key_file.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- Docker socket file /var/run/docker.sock ---
 - name: Ensure Docker socket file ownership is root:docker
@@ -333,13 +393,17 @@
     path: /var/run/docker.sock
     owner: root
     group: docker
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure Docker socket file permissions are 660
   ansible.builtin.file:
     path: /var/run/docker.sock
     mode: '0660'
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- daemon.json ---
 - name: Ensure daemon.json file ownership is root:root
@@ -347,20 +411,26 @@
     path: /etc/docker/daemon.json
     owner: root
     group: root
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure daemon.json file permissions are 644
   ansible.builtin.file:
     path: /etc/docker/daemon.json
     mode: '0644'
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- /etc/default/docker ---
 - name: Check if /etc/default/docker exists
   ansible.builtin.stat:
     path: /etc/default/docker
   register: default_docker
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure /etc/default/docker file ownership is root:root
   ansible.builtin.file:
@@ -368,21 +438,27 @@
     owner: root
     group: root
   when: default_docker.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure /etc/default/docker file permissions are 644
   ansible.builtin.file:
     path: /etc/default/docker
     mode: '0644'
   when: default_docker.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- /etc/sysconfig/docker ---
 - name: Check if /etc/sysconfig/docker exists
   ansible.builtin.stat:
     path: /etc/sysconfig/docker
   register: sysconfig_docker
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure /etc/sysconfig/docker file ownership is root:root
   ansible.builtin.file:
@@ -390,21 +466,27 @@
     owner: root
     group: root
   when: sysconfig_docker.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure /etc/sysconfig/docker file permissions are 644
   ansible.builtin.file:
     path: /etc/sysconfig/docker
     mode: '0644'
   when: sysconfig_docker.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # --- Containerd socket file ---
 - name: Check if containerd socket exists
   ansible.builtin.stat:
     path: /run/containerd/containerd.sock
   register: containerd_sock
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure Containerd socket file ownership is root:root
   ansible.builtin.file:
@@ -412,14 +494,18 @@
     owner: root
     group: root
   when: containerd_sock.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Ensure Containerd socket file permissions are 660
   ansible.builtin.file:
     path: /run/containerd/containerd.sock
     mode: '0660'
   when: containerd_sock.stat.exists
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 # -------------------------------------------------------
 # Image sprawl prevention
@@ -430,7 +516,9 @@
     images: true
     images_filters:
       dangling: true
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Remove all unused Docker images older than defined threshold
   community.docker.docker_prune:
@@ -438,19 +526,25 @@
     images_filters:
       until: "{{ DOCKER_image_prune_until }}"
   when: DOCKER_image_prune_enabled | bool
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Remove unused Docker volumes
   community.docker.docker_prune:
     volumes: true
   when: DOCKER_volume_prune_enabled | bool
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Remove unused Docker networks
   community.docker.docker_prune:
     networks: true
   when: DOCKER_network_prune_enabled | bool
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Deploy Docker cleanup systemd service
   ansible.builtin.template:
@@ -460,7 +554,9 @@
     group: root
     mode: '0644'
   notify: Reload systemd
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Deploy Docker cleanup systemd timer
   ansible.builtin.template:
@@ -470,7 +566,9 @@
     group: root
     mode: '0644'
   notify: Reload systemd
-  tags: docker_hardening
+  tags: 
+    - docker_hardening
+    - docker
 
 - name: Enable and start Docker cleanup timer
   ansible.builtin.systemd:
@@ -478,5 +576,6 @@
     enabled: true
     state: started
     daemon_reload: true
-  tags: docker_hardening
-
+  tags: 
+    - docker_hardening
+    - docker

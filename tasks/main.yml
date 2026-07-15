@@ -22,7 +22,8 @@
     name: "{{ DOCKER_REQ_PACKAGES }}"
     update_cache: yes
     cache_valid_time: 3600
-  tags: docker
+  tags:
+    - docker
 
 - name: Create apt keyrings directory
   ansible.builtin.file:
