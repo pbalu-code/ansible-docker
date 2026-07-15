@@ -48,7 +48,7 @@
     mode: 0644
     update_cache: yes
     validate_certs: yes
-    filename: docker.list
+    filename: docker
   tags: docker
 
 - name: Install docker packages
