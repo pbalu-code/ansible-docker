@@ -1,0 +1,42 @@
+{
+    "icc": {{ DOCKER_icc_enabled | bool | lower }},
+    "log-level": "{{ DOCKER_log_level }}",
+    "iptables": {{ DOCKER_iptables_enabled | bool | lower }},
+    "insecure-registries": {{ DOCKER_insecure_registries | to_json }},
+    "storage-driver": "{{ DOCKER_storage_driver }}",
+    "default-ulimits": {
+        "nofile": {
+            "Name": "nofile",
+            "Soft": {{ DOCKER_default_ulimits.nofile.soft | int }},
+            "Hard": {{ DOCKER_default_ulimits.nofile.hard | int }}
+        }
+    },
+    "userns-remap": "{{ DOCKER_userns_remap }}",
+    "exec-opts": ["native.cgroupdriver={{ DOCKER_cgroup_driver }}"],
+    "log-driver": "{{ DOCKER_log_driver }}",
+    "log-opts": {{ DOCKER_log_opts | to_json }},
+    "experimental": {{ DOCKER_experimental | bool | lower }},
+    "no-new-privileges": {{ DOCKER_no_new_privileges | bool | lower }},
+    "live-restore": {{ DOCKER_live_restore | bool | lower }},
+    "userland-proxy": {{ DOCKER_userland_proxy | bool | lower }}
+{% if DOCKER_tls_enabled | bool %}
+    ,
+    "tls": {{ DOCKER_tls_enabled | bool | lower }},
+    "tlsverify": {{ DOCKER_tls_verify | bool | lower }},
+    "tlscacert": "{{ DOCKER_tls_cacert }}",
+    "tlscert": "{{ DOCKER_tls_cert }}",
+    "tlskey": "{{ DOCKER_tls_key }}"
+{% endif %}
+{% if DOCKER_seccomp_profile is not none %}
+    ,
+    "seccomp-profile": "{{ DOCKER_seccomp_profile }}"
+{% endif %}
+{% if DOCKER_authorization_plugins | length > 0 %}
+    ,
+    "authorization-plugins": {{ DOCKER_authorization_plugins | to_json }}
+{% endif %}
+{% if DOCKER_base_device_size is not none %}
+    ,
+    "storage-opts": ["dm.basesize={{ DOCKER_base_device_size }}"]
+{% endif %}
+}

@@ -1,0 +1,18 @@
+[Unit]
+Description=Docker image and container cleanup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# Remove stopped containers
+ExecStart=/usr/bin/docker container prune --force
+# Remove unused images older than threshold
+ExecStart=/usr/bin/docker image prune --all --force --filter "until={{ DOCKER_image_prune_until }}"
+# Remove unused volumes
+ExecStart=/usr/bin/docker volume prune --force
+# Remove unused networks
+ExecStart=/usr/bin/docker network prune --force
+
+[Install]
+WantedBy=multi-user.target

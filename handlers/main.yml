@@ -1,2 +1,23 @@
 ---
 # handlers file for docker
+- name: Restart auditd
+  ansible.builtin.service:
+    name: auditd.service
+    state: restarted
+  when: immutable_audit.changed
+  tags: docker_hardening
+
+- name: Restart docker
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+  tags: 
+    - docker_hardening
+    - docker
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  tags:
+    - docker_hardening
+    - docker

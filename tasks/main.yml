@@ -2,6 +2,9 @@
 # tasks file for docker
 - name: Get system's facter
   ansible.builtin.gather_facts:
+  tags: 
+    - docker
+    - docker_hardening
 
 - name: Include distribution dependent variables
   ansible.builtin.include_vars: "{{ item }}"
@@ -10,12 +13,16 @@
     - "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_distribution }}.yml"
     - "{{ ansible_os_family }}.yml"
+  tags:
+    - docker
+    - docker_hardening
 
 - name: Install docker's dependency packages
   ansible.builtin.apt:
     name: "{{ DOCKER_REQ_PACKAGES }}"
     update_cache: yes
     cache_valid_time: 3600
+  tags: docker
 
 - name: Create apt keyrings directory
   ansible.builtin.file:
@@ -24,14 +31,16 @@
     mode: '0755'
     owner: root
     group: root
+  tags: docker
 
 - name: Store repository keyring
   ansible.builtin.get_url:
     dest: "{{ DOCKER_KEYRING }}"
-    mode: '0644' 
+    mode: '0644'
     owner: root
     group: root
     url: "{{ DOCKER_KEYRING_SOURCE }}"
+  tags: docker
 
 - name: Set apt repo
   ansible.builtin.apt_repository:
@@ -40,17 +49,20 @@
     update_cache: yes
     validate_certs: yes
     filename: docker.list
+  tags: docker
 
 - name: Install docker packages
   ansible.builtin.apt:
     name: "{{ DOCKER_PACKAGES }}"
     state: present
+  tags: docker
 
 - name: Make sure docker service is running
   ansible.builtin.systemd:
     name: docker
     state: started
     enabled: yes
+  tags: docker
 
 # - name: Install docker-composer
 #   ansible.builtin.get_url:
@@ -59,3 +71,9 @@
 #     owner: root
 #     group: root
 #     mode: 775
+- name: Include hardening tasks
+  ansible.builtin.include_tasks: hardening.yml
+  when: DOCKER_do_hardening
+  tags:
+    - docker
+    - docker_hardening

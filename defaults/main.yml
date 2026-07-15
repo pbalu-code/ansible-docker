@@ -18,3 +18,91 @@ DOCKER_PACKAGES:
   - containerd.io
   - docker-buildx-plugin
   - docker-compose-plugin
+
+DOCKER_auditd_conf_path: /etc/audit
+DOCKER_do_hardening: false
+
+# --- Docker daemon hardening defaults ---
+
+# Run daemon as non-root user (rootless mode)
+DOCKER_rootless_enabled: false
+DOCKER_rootless_user: dockeruser
+
+# Restrict network traffic between containers on default bridge
+DOCKER_icc_enabled: false
+
+# Logging level: debug, info, warn, error, fatal
+DOCKER_log_level: info
+
+# Allow Docker to manage iptables
+DOCKER_iptables_enabled: true
+
+# Insecure registries - should be empty in production
+DOCKER_insecure_registries: []
+
+# Storage driver - never use aufs
+DOCKER_storage_driver: overlay2
+
+# TLS authentication for Docker daemon
+DOCKER_tls_enabled: false
+DOCKER_tls_verify: false
+DOCKER_tls_cacert: /etc/docker/certs/ca.pem
+DOCKER_tls_cert: /etc/docker/certs/server-cert.pem
+DOCKER_tls_key: /etc/docker/certs/server-key.pem
+
+# Default ulimits
+DOCKER_default_ulimits:
+  nofile:
+    soft: 1024
+    hard: 65536
+
+# User namespace support
+DOCKER_userns_remap: default
+
+# Default cgroup driver
+DOCKER_cgroup_driver: systemd
+
+# Base device size - leave at default (null = don't set)
+DOCKER_base_device_size: null
+
+# Authorization plugin
+DOCKER_authorization_plugins: []
+
+# Log driver for centralized logging
+DOCKER_log_driver: journald
+DOCKER_log_opts: {}
+
+# Prevent containers from acquiring new privileges
+DOCKER_no_new_privileges: true
+
+# Live restore - keep containers running when daemon stops
+DOCKER_live_restore: true
+
+# Disable userland proxy
+DOCKER_userland_proxy: false
+
+# Custom seccomp profile path (null = use default)
+DOCKER_seccomp_profile: null
+
+# Disable experimental features in production
+DOCKER_experimental: false
+
+# -------------------------------------------------------
+# Image sprawl prevention
+# -------------------------------------------------------
+# Enable automatic image pruning
+DOCKER_image_prune_enabled: true
+
+# Remove images unused for longer than this duration
+# Examples: "24h", "48h", "168h" (7 days)
+DOCKER_image_prune_until: "168h"
+
+# Enable volume pruning
+DOCKER_volume_prune_enabled: true
+
+# Enable network pruning
+DOCKER_network_prune_enabled: true
+
+# Systemd timer schedule (OnCalendar format)
+# Examples: "weekly", "daily", "*-*-* 02:00:00"
+DOCKER_image_prune_schedule: "weekly"

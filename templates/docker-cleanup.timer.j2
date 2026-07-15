@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Docker cleanup {{ DOCKER_image_prune_schedule }}
+Requires=docker-cleanup.service
+
+[Timer]
+OnCalendar={{ DOCKER_image_prune_schedule }}
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
